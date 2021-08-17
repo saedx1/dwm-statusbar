@@ -1,0 +1,24 @@
+#!/bin/sh
+
+MYPATH="$HOME/.scripts/status_bar"
+SEP1="["
+SEP2="]"
+
+while true
+do
+
+order=$(cat "$MYPATH/order")
+var=" "
+while IFS= read -r f; do
+    f="$MYPATH/scripts/$f"
+    [[ -x "$f" ]] || continue
+    out="$SEP1$($f)$SEP2"
+    var=" $out $var"
+done <<< "$order"
+
+
+xsetroot -name "$var"
+
+sleep 10
+
+done

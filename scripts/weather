@@ -1,0 +1,4 @@
+#!/bin/sh
+
+weather="$(curl 'wttr.in/?m&format=1')"
+printf "${weather:0:1} ${weather:3}"

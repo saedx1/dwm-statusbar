@@ -1,0 +1,4 @@
+#!/bin/sh
+
+out=$(ps aux | awk '{sum+=$3} END {print sum}')
+echo "$out%"

@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# A dwm_bar function to read the battery level and status
+# Joe Standring <git@joestandring.com>
+# GNU GPLv3
+
+CHARGE=$(cat /sys/class/power_supply/BAT1/capacity)
+STATUS=$(cat /sys/class/power_supply/BAT1/status)
+
+([ "$STATUS" = "Charging" ] && printf "🔌 %s%% %s" "$CHARGE" "$STATUS") || printf "🔋 %s%% %s" "$CHARGE" "$STATUS"

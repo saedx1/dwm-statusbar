@@ -1,0 +1,4 @@
+#!/bin/sh
+
+printf "🔊 "
+pulseaudio-ctl full-status | cut -d' ' -f1

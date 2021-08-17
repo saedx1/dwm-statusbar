@@ -1,0 +1,6 @@
+#!/bin/sh
+#!/bin/sh
+
+printf "📶 "
+ssid=$(iwgetid -r)
+([ "$ssid" != "" ] && printf "$ssid") || printf "Disconnected"

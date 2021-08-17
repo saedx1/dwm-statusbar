@@ -1,0 +1,5 @@
+#/bin/sh
+
+n=$(pacman -Qu | wc -l)
+m=$(yay -Qu | wc -l)
+printf "📦 $n+$m"
