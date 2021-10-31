@@ -8,3 +8,5 @@ CHARGE=$(cat /sys/class/power_supply/BAT1/capacity)
 STATUS=$(cat /sys/class/power_supply/BAT1/status)
 
 ([ "$STATUS" = "Charging" ] && printf "🔌 %s%% %s" "$CHARGE" "$STATUS") || printf "🔋 %s%% %s" "$CHARGE" "$STATUS"
+
+([ "$STATUS" = "Disharging" ] && [ $CHARGE -eq 10 -o $CHARGE -eq 9 -o $CHARGE -lt 50 ] && notify-send -u critical 'Plug-in Charger' 'Charge your Laptop, Now!!!!')
