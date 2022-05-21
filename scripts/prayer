@@ -1,0 +1,20 @@
+#!/bin/sh
+
+API_URL=https://api.aladhan.com/v1/calendarByCity
+
+## ADDRESS ##
+CITY=Jamestown
+STATE=NC
+COUNTRY=USA
+
+OUTPUT_FILE="$CITY_$STATE_$COUNTRY-prayers.json"
+
+## GET DATA IF NOT ALREADY EXISTS ##
+test $OUTPUT_FILE || curl -X GET -G $API_URL -d city=$CITY -d state=$STATE -d country=$COUNTRY -d annual=true -d iso8601=true > $OUTPUT_FILE
+
+MONTH=$(date +'%-m')
+DAY=$(date +'%-d')
+DAY_INDEX=$(($DAY-1))
+
+cat $OUTPUT_FILE | jq ".data.\"${MONTH}\"[${DAY_INDEX}].timings"
+
