@@ -1,8 +1,6 @@
 #!/bin/sh
 
-MYPATH="$HOME/.scripts/status_bar"
-SEP1="["
-SEP2="]"
+MYPATH=$(dirname "$0")
 
 while true
 do
@@ -12,8 +10,8 @@ var=" "
 while IFS= read -r f; do
     f="$MYPATH/scripts/$f"
     [[ -x "$f" ]] || continue
-    out="$SEP1$($f)$SEP2"
-    var=" $out $var"
+    out="  $($f)  "
+    var="$out$var"
 done <<< "$order"
 
 

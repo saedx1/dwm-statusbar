@@ -1,4 +1,5 @@
 #!/bin/sh
 
-printf "🔊 "
-pulseaudio-ctl full-status | cut -d' ' -f1
+v=$(pulseaudio-ctl full-status | cut -d' ' -f1)
+
+printf "🔊 ${v}"

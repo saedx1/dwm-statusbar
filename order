@@ -1,9 +1,6 @@
 time
-battery_level
-backlight
 audio_level
+weather
+prayer
 memory
 cpu
-weather
-pkgs
-wifi_name

@@ -1,4 +1,4 @@
 #!/bin/sh
 
 out=$(date +"%a %m/%d %I:%M %p")
-printf "⏰ $out"
+printf "$out"

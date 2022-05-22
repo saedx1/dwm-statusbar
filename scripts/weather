@@ -1,4 +1,36 @@
-#!/bin/sh
+#!/bin/python
 
-weather="$(curl 'wttr.in/?m&format=1')"
-printf "${weather:0:1} ${weather:3}"
+
+from os import system
+import sys
+import time
+import requests
+import requests_cache
+
+
+def parse_weather(res):
+    cut = res.find("+")
+
+    if cut == -1:
+        cut = res.find("-")
+
+    if cut == -1:
+        cut = res.find("0")
+
+    return f"{res[0]} {res[cut:-1]}"
+
+
+requests_cache.install_cache(
+    "wttr_cache",
+    backend="sqlite",
+    expire_after=600,
+    use_cache_dir=True,
+)
+
+params = {"m": "", "format": "1"}
+res = requests.get("https://wttr.in/", params=params)
+if res.status_code != requests.codes["ok"]:
+    print(f"Server returned {res.status_code} code", file=sys.stderr)
+    sys.exit(-1)
+
+print(parse_weather(res.text))

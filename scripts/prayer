@@ -1,33 +1,114 @@
-#!/bin/sh
+#!/bin/python
 
-timestamp() { 
-    date '+%s%N' --date="$1"
-}
+import json
+import sys
+import os
+from typing import Dict
+import requests
+from pathlib import Path
+import pendulum
+import notify2
 
-API_URL=https://api.aladhan.com/v1/calendarByCity
 
-## ADDRESS ##
-CITY=Jamestown
-STATE=NC
-COUNTRY=USA
+def error_exit(msg):
+    print(msg, file=sys.stderr)
+    sys.exit(-1)
 
-OUTPUT_FILE="${CITY}_${STATE}_${COUNTRY}-prayers.json"
 
-## GET DATA IF NOT ALREADY EXISTS ##
-test -f $OUTPUT_FILE || curl -X GET -G $API_URL -d city=$CITY -d state=$STATE -d country=$COUNTRY -d annual=true -d iso8601=true > $OUTPUT_FILE
+def get_old():
+    old = ""
+    if os.path.exists(NEXT_PATH):
+        with open(NEXT_PATH, "r") as f:
+            old = f.readline()
 
-MONTH=$(date +'%-m')
-DAY=$(date +'%-d')
-DAY_INDEX=$(($DAY-1))
+    return old
 
-TIMES=$(cat $OUTPUT_FILE | jq -r ".data.\"${MONTH}\"[${DAY_INDEX}].timings | to_entries[] | .value")
-for i in $TIMES
-do
-    [ "${i:0:1}" = '(' ] && continue
-    
-    now=$(timestamp "$date")
-    salah=$(timestamp "$i")
-    
-    [ $now -le $salah ] && echo "$salah" && break
 
-done
+def sendmessage(title, message):
+    if title == "" and message == "":
+        return
+
+    notify2.init("Test")
+    notice = notify2.Notification(
+        title,
+        message,
+    )
+    notice.set_urgency(notify2.URGENCY_CRITICAL)
+    notice.show()
+
+    return
+
+
+API_URL = "https://api.aladhan.com/v1/calendarByCity"
+
+address = {"city": "Jamestown", "state": "NC", "country": "USA"}
+
+
+XDG_DATA = os.environ.get("XDG_DATA_HOME", None)
+if XDG_DATA is None:
+    error_exit("XDG_DATA_HOME is not set")
+
+DATA_PATH = Path(XDG_DATA) / "prayers"
+PRAYERS_FILE = (
+    DATA_PATH
+    / f"{address['city']}_{address['state']}_{address['country']}-prayers.json"
+)
+NEXT_PATH = DATA_PATH / "current"
+
+if not os.path.exists(DATA_PATH):
+    os.mkdir(DATA_PATH)
+
+if not os.path.exists(PRAYERS_FILE):
+    req_params = dict(annual="true", iso8601="true", **address)
+    res = requests.get(API_URL, params=req_params)
+    if res.status_code == requests.codes["ok"]:
+        with open(PRAYERS_FILE, "w") as f:
+            f.write(res.text)
+    else:
+        error_exit(f"Request returned code {res.status_code}")
+
+with open(PRAYERS_FILE, "r") as f:
+    prayers = json.load(f)
+
+today = pendulum.today()
+
+month = today.month
+day = today.day - 1
+
+times = prayers["data"][f"{month}"][day]["timings"]
+
+times.pop("Sunset")
+times.pop("Imsak")
+times.pop("Midnight")
+
+for k, v in times.items():
+    v = v[:25]
+    times[k] = pendulum.parser.parse(v)
+
+for k, v in times.items():
+    if v.is_future():
+        old = get_old()
+
+        new = "%s @ %s" % (k, v.format("hh:mm A"))
+        if old != new:
+            sendmessage(old, "")
+
+        with open(NEXT_PATH, "w") as f:
+            f.write(new)
+
+        print(new)
+
+        sys.exit(0)
+
+
+old = get_old()
+
+new = "%s @ %s" % ("Fajr", times["Fajr"].format("hh:mm A"))
+
+if old != new:
+    sendmessage(old, "")
+
+with open(NEXT_PATH, "w") as f:
+    f.write(new)
+
+print(new)
