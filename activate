@@ -1,14 +1,16 @@
 #!/bin/sh
 
-MYPATH=$(dirname "$0")
+CFG=$XDG_CONFIG_HOME/statusbar
+
 
 while true
 do
 
-order=$(cat "$MYPATH/order")
+order=$(cat $CFG/order)
 var=" "
 while IFS= read -r f; do
-    f="$MYPATH/scripts/$f"
+    f="$CFG/scripts/$f"
+    echo $f
     [[ -x "$f" ]] || continue
     out="  $($f)  "
     var="$out$var"
@@ -17,6 +19,6 @@ done <<< "$order"
 
 xsetroot -name "$var"
 
-sleep 10
+sleep 15
 
 done
