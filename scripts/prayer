@@ -77,9 +77,9 @@ day = today.day - 1
 
 times = prayers["data"][f"{month}"][day]["timings"]
 
-times.pop("Sunset")
-times.pop("Imsak")
-times.pop("Midnight")
+keep = ["Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha"]
+
+times = {i: times[i] for i in keep}
 
 for k, v in times.items():
     v = v[:25]
